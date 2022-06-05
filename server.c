@@ -1,5 +1,13 @@
 #include "segel.h"
 #include "request.h"
+#include "requestQueue.h"
+
+typedef struct thread_stats_t {
+    unsigned int id;
+    unsigned int handled_count;
+    unsigned int static_count;
+    unsigned int dynamic_count;
+} thread_stats;
 
 // 
 // server.c: A very, very simple web server
@@ -50,6 +58,23 @@ void getargs(int* port, int* threads, int* max_queue_size, RQPolicy* policy, int
 
 }
 
+struct thread_args {
+    requestQueue* queue;
+    int internal_id;
+    pthread_t thread_id;
+};
+
+void* worker_thread(void* arg) {
+    int id = ((struct thread_args*)arg)->internal_id;
+    requestQueue* queue = ((struct thread_args*)arg)->queue;
+
+    while(1) {
+        // TODO: pick up a request from the queue and handle it as follows:
+        // get request from queue
+        // handle request + statistics
+        // close request
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -61,23 +86,26 @@ int main(int argc, char *argv[])
     getargs(&port, &threads, &max_queue_size, &policy, argc, argv);
     requestQueue* queue = RQInit(max_queue_size, policy);
 
-    // 
-    // HW3: Create some threads...
-    //
+    struct thread_args* args = malloc(sizeof(*args)*threads);
+    for( int i=0; i<threads; i++ ) {
+        args[i].queue = queue;
+        args[i].internal_id = i;
+        Pthread_create(&(args[i].thread_id), NULL, worker_thread, (void*)(args+i));
+    }
 
     listenfd = Open_listenfd(port);
     while (1) {
-	clientlen = sizeof(clientaddr);
-	connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
+        clientlen = sizeof(clientaddr);
+        connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
 
-	// 
-	// HW3: In general, don't handle the request in the main thread.
-	// Save the relevant info in a buffer and have one of the worker threads 
-	// do the work. 
-	// 
-	requestHandle(connfd);
+        // TODO: move request handling to worker_thread(...) routine
+        // HW3: In general, don't handle the request in the main thread.
+        // Save the relevant info in a buffer and have one of the worker threads
+        // do the work.
+        //
+        requestHandle(connfd);
 
-	Close(connfd);
+        Close(connfd);
     }
 
 }

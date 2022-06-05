@@ -90,6 +90,21 @@ pid_t WaitPid(pid_t pid, int *status, int options)
 
 /* $end wait */
 
+/*********************************************
+ * Wrappers for Unix thread control functions
+ ********************************************/
+
+int Pthread_create(pthread_t *restrict thread,
+                   const pthread_attr_t *restrict attr,
+                   void *(*start_routine)(void *),
+                   void *restrict arg) {
+    int rc;
+
+    if ((rc = pthread_create(thread, attr, start_routine, arg)) != 0)
+        unix_error("pthread_create error");
+    return rc;
+}
+
 /********************************
  * Wrappers for Unix I/O routines
  ********************************/

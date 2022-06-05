@@ -69,6 +69,12 @@ void Execve(const char *filename, char *const argv[], char *const envp[]);
 pid_t Wait(int *status);
 pid_t WaitPid(pid_t pid, int *status, int options);
 
+/* Thread control wrappers */
+int Pthread_create(pthread_t *restrict thread,
+                   const pthread_attr_t *restrict attr,
+                   void *(*start_routine)(void *),
+                   void *restrict arg);
+
 int Gethostname(char *name, size_t len) ;
 int Setenv(const char *name, const char *value, int overwrite);
 

@@ -1,3 +1,8 @@
+.idea/
+client
+server
+*.cgi
+
 # Prerequisites
 *.d
 

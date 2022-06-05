@@ -2,6 +2,7 @@
 client
 server
 *.cgi
+public/
 
 # Prerequisites
 *.d

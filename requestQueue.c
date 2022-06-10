@@ -30,6 +30,36 @@ struct requestQueue_t {
     pthread_cond_t can_take_req;
 };
 
+/* Node methods */
+
+Node NodeCreate(req_info req) {
+    Node new_node = (Node)malloc(sizeof(*new_node));
+    if (new_node == NULL) {
+        return NULL;
+    }
+
+    new_node->req.connfd = req.connfd;
+    new_node->req.arrival_time = req.arrival_time;
+    new_node->req.dispatch_interval = req.dispatch_interval;
+
+    new_node->prev = NULL;
+    new_node->next = NULL;
+
+    return new_node;
+}
+
+// Close the connection (connfd) stored in the *node_ptr and free
+void dropConnection(Node* node_ptr) {
+    if (node_ptr == NULL || *node_ptr == NULL)
+        return;
+
+    Close((*node_ptr)->req.connfd);
+    free(*node_ptr);
+    *node_ptr = NULL;
+}
+
+/* End of Node methods */
+
 /* List methods */
 void ListInit(list* lst) {
     // lst is already allocated within requestQueue
@@ -38,16 +68,56 @@ void ListInit(list* lst) {
     lst->size = 0;
 }
 
+// Drop connection for each node and free (the node)
+// lst was allocated was part of requestQueue malloc, and wasn't malloced itself!
 void ListCleanup(list* lst) {
-    // lst was allocated was part of requestQueue malloc, and wasn't malloced itself!
     Node next, curr = lst->head;
     while (curr != NULL) {
         next = curr->next;
-        free(curr);
+        dropConnection(&curr);
         curr = next;
     }
+    lst->head = NULL;
+    lst->tail = NULL;
     lst->size = 0;
 }
+
+bool ListEmpty(list* lst) {
+    if (lst->head == NULL) {
+        assert(lst->size == 0 && lst->tail == NULL); // wait_queue.size should be 0 iff head is NULL iif tail is NULL
+        return true;
+    }
+
+    assert(lst->size > 0 && lst->tail != NULL); // wait_queue.size should be 0 iff head is NULL iif tail is NULL
+    return false;
+
+}
+
+void ListRemoveNode(list* lst, Node node_to_remove) {
+    if (lst == NULL || node_to_remove == NULL)
+        return;
+
+    if (node_to_remove == lst->head && node_to_remove == lst->tail) {
+        lst->head = NULL;
+        lst->tail = NULL;
+    } else if (node_to_remove == lst->head)
+        lst->head = node_to_remove->next;
+    else if (node_to_remove == lst->tail)
+        lst->tail = node_to_remove->prev;
+    else {
+        node_to_remove->prev->next = node_to_remove->next;
+        node_to_remove->next->prev = node_to_remove->prev;
+    }
+
+    if (lst->head != NULL)
+        lst->head->prev = NULL;
+    if (lst->tail !=NULL)
+        lst->tail->next = NULL;
+
+    dropConnection(&(node_to_remove));
+    lst->size--;
+}
+
 /* End of List methods */
 
 /* Full queue handlers */

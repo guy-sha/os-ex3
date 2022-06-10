@@ -17,9 +17,6 @@ typedef struct requestQueue_t requestQueue;
 requestQueue* RQInit(int max_queue_size, RQPolicy policy);
 void RQDestroy(requestQueue* queue);
 
-// cond_t can_add
-// cond_t can_take
-
 RQStatus RQInsertRequest(requestQueue* queue, req_info request);
 RQStatus RQTakeRequest(requestQueue* queue, req_info* request_ptr);
 RQStatus RQNotifyDone(requestQueue* queue);

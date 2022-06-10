@@ -3,6 +3,7 @@ client
 server
 *.cgi
 public/
+.vscode
 
 # Prerequisites
 *.d

@@ -3,7 +3,7 @@
 #include "requestQueue.h"
 
 typedef struct thread_stats_t {
-    unsigned int id;
+    unsigned int internal_id;
     unsigned int handled_count;
     unsigned int static_count;
     unsigned int dynamic_count;

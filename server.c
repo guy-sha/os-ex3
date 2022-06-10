@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
         req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval };
         RQInsertRequest(queue, req);
     }
-
 }
 
 

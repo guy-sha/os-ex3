@@ -49,11 +49,12 @@ Node NodeCreate(req_info req) {
 }
 
 // Close the connection (connfd) stored in the *node_ptr and free
-void dropConnection(Node* node_ptr) {
+void dropConnection(Node* node_ptr, bool close_connection) {
     if (node_ptr == NULL || *node_ptr == NULL)
         return;
 
-    Close((*node_ptr)->req.connfd);
+    if (close_connection)
+        Close((*node_ptr)->req.connfd);
     free(*node_ptr);
     *node_ptr = NULL;
 }
@@ -74,7 +75,7 @@ void ListCleanup(list* lst) {
     Node next, curr = lst->head;
     while (curr != NULL) {
         next = curr->next;
-        dropConnection(&curr);
+        dropConnection(&curr, true);
         curr = next;
     }
     lst->head = NULL;
@@ -93,7 +94,7 @@ bool ListEmpty(list* lst) {
 
 }
 
-void ListRemoveNode(list* lst, Node node_to_remove) {
+void ListRemoveNode(list* lst, Node node_to_remove, bool close_connection) {
     if (lst == NULL || node_to_remove == NULL)
         return;
 
@@ -114,7 +115,7 @@ void ListRemoveNode(list* lst, Node node_to_remove) {
     if (lst->tail !=NULL)
         lst->tail->next = NULL;
 
-    dropConnection(&(node_to_remove));
+    dropConnection(&(node_to_remove), close_connection);
     lst->size--;
 }
 
@@ -135,7 +136,7 @@ RQStatus doBlock(requestQueue* queue, Node* node_ptr) {
 
 // Drop the new request - close the connection and free the node
 RQStatus doDropTail(requestQueue* queue, Node* node_ptr) {
-    dropConnection(node_ptr);
+    dropConnection(node_ptr, true);
     return RQ_SUCCESS;
 }
 
@@ -145,7 +146,7 @@ int getRandomInRange(int lower, int upper) {
 
 RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     if (ListEmpty(&(queue->wait_queue))) {
-        dropConnection(node_ptr);
+        dropConnection(node_ptr, true);
         return RQ_SUCCESS;
     }
 
@@ -173,7 +174,7 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     for (int idx=0; idx<waiting_count && curr != NULL; idx++) {
         Node next = curr->next;
         if (queue_entries[idx] == true)
-            ListRemoveNode(&(queue->wait_queue), curr);
+            ListRemoveNode(&(queue->wait_queue), curr, true);
         curr = next;
     }
 
@@ -184,11 +185,11 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
 // Drop the oldest request in the queue by closing its connection and freeing the head node
 RQStatus doDropHead(requestQueue* queue, Node* node_ptr) {
     if (ListEmpty(&(queue->wait_queue))) {
-        dropConnection(node_ptr);
+        dropConnection(node_ptr, true);
         return RQ_SUCCESS;
     }
 
-    ListRemoveNode(&(queue->wait_queue), queue->wait_queue.head);
+    ListRemoveNode(&(queue->wait_queue), queue->wait_queue.head, true);
     return RQ_SUCCESS;
 }
 
@@ -271,7 +272,7 @@ RQStatus RQTakeRequest(requestQueue* queue, req_info* request_ptr) {
 
     Node tail = queue->wait_queue.tail;
     *request_ptr = tail->req; // req_info does not contain any ptrs as data members, and doesn't need to deep-copy
-    ListRemoveNode(&(queue->wait_queue), tail);
+    ListRemoveNode(&(queue->wait_queue), tail, false);
     queue->currently_handled_count++;
 
     pthread_mutex_unlock(&(queue->lock));

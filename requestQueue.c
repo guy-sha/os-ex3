@@ -1,3 +1,5 @@
+#include <stdbool.h>
+#include <assert.h>
 #include "requestQueue.h"
 
 struct node_t {

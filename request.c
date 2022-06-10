@@ -161,6 +161,7 @@ void requestHandle(int fd)
    char filename[MAXLINE], cgiargs[MAXLINE];
    rio_t rio;
 
+   printf("handling request on fd %d\n", fd);
    Rio_readinitb(&rio, fd);
    Rio_readlineb(&rio, buf, MAXLINE);
    sscanf(buf, "%s %s %s", method, uri, version);

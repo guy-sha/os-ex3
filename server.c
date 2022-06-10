@@ -70,13 +70,20 @@ void* worker_thread(void* arg) {
     thread_stats stats = { .internal_id=id, .dynamic_count=0, .handled_count=0, .static_count=0 };
 
     req_info request;
+    struct timeval dispatch_time;
 
+    printf("thread number %d starting to work\n", id);
     while(1) {
         // get request from queue
         // handle request + statistics
         // close request
 
         RQTakeRequest(queue, &request);
+
+        gettimeofday(&dispatch_time, NULL);
+        timersub(&dispatch_time, &(request.arrival_time), &(request.dispatch_interval));
+
+        printf("thread %d got request on fd %d\n", id, request.connfd);
         requestHandle(request.connfd); // maybe give statistics as an arg, also maybe check if null
         Close(request.connfd);
         RQNotifyDone(queue);
@@ -106,6 +113,7 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
 
+        printf("server got request on fd %d\n", connfd);
         gettimeofday(&arrival_time, NULL);
         req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval };
         RQInsertRequest(queue, req);

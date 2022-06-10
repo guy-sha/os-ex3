@@ -3,15 +3,15 @@
 #include "requestQueue.h"
 
 struct node_t {
-    req_info info;
+    req_info req;
     struct node_t* prev;
     struct node_t* next;
 };
 typedef struct node_t* Node;
 
 typedef struct list_t {
-    Node head;
-    Node tail;
+    Node head;  // oldest request in queue
+    Node tail;  // newest request in queue
     int size;
 } list;
 

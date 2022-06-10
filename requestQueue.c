@@ -264,5 +264,27 @@ RQStatus RQInsertRequest(requestQueue* queue, req_info request) {
     return RQ_SUCCESS;
 }
 
+RQStatus RQTakeRequest(requestQueue* queue, req_info* request_ptr) {
+    pthread_mutex_lock(&(queue->lock));
+    while (ListEmpty(&(queue->wait_queue)) == true)
+        pthread_cond_wait(&(queue->can_take_req), &(queue->lock));
+
+    Node tail = queue->wait_queue.tail;
+    *request_ptr = tail->req; // req_info does not contain any ptrs as data members, and doesn't need to deep-copy
+    ListRemoveNode(&(queue->wait_queue), tail);
+    queue->currently_handled_count++;
+
+    pthread_mutex_unlock(&(queue->lock));
+    return RQ_SUCCESS;
+}
+
+RQStatus RQNotifyDone(requestQueue* queue) {
+    pthread_mutex_lock(&(queue->lock));
+    queue->currently_handled_count--;
+    pthread_cond_signal(&(queue->can_add_req));
+    pthread_mutex_unlock(&(queue->lock));
+
+    return RQ_SUCCESS;
+}
 
 /* End of requestQueue methods */

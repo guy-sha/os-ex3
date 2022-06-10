@@ -69,16 +69,16 @@ void* worker_thread(void* arg) {
     requestQueue* queue = ((struct thread_args*)arg)->queue;
     thread_stats stats = { .internal_id=id, .dynamic_count=0, .handled_count=0, .static_count=0 };
 
-    req_info* req_ptr = NULL;
+    req_info request;
 
     while(1) {
         // get request from queue
         // handle request + statistics
         // close request
 
-        RQTakeRequest(queue, req_ptr);
-        requestHandle(req_ptr->connfd); // maybe give statistics as an arg, also maybe check if null
-        Close(req_ptr->connfd);
+        RQTakeRequest(queue, &request);
+        requestHandle(request.connfd); // maybe give statistics as an arg, also maybe check if null
+        Close(request.connfd);
         RQNotifyDone(queue);
     }
 }

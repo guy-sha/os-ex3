@@ -234,4 +234,35 @@ void RQDestroy(requestQueue* queue) {
     free(queue);
 }
 
+
+RQStatus RQInsertRequest(requestQueue* queue, req_info request) {
+    Node req_node = NodeCreate(request); // check if NULL?
+
+    pthread_mutex_lock(&(queue->lock));
+    int total_in_queue = queue->wait_queue.size + queue->currently_handled_count;
+    if (total_in_queue >= queue->max_queue_size)
+        queue->full_queue_handler(queue, &req_node);
+
+    // req_node will be NULL if the current request was dropped.
+    // This will happen if the policy is RQ_DROP_TAIL and the list is full,
+    // or the policy RQ_DROP_HEAD or RQ_DROP_RANDOM and there are no waiting requests.
+    // in that case, the handler frees the new node and closes the connection (connfd)
+    if (req_node != NULL) {
+        if (ListEmpty(&(queue->wait_queue))) {
+            queue->wait_queue.head = req_node;
+        } else {
+            queue->wait_queue.tail->next = req_node;
+            req_node->prev = queue->wait_queue.tail;
+        }
+        queue->wait_queue.tail = req_node;
+        queue->wait_queue.size++;
+
+        pthread_cond_signal(&(queue->can_take_req));
+    }
+
+    pthread_mutex_unlock(&(queue->lock));
+    return RQ_SUCCESS;
+}
+
+
 /* End of requestQueue methods */

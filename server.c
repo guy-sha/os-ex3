@@ -67,12 +67,19 @@ struct thread_args {
 void* worker_thread(void* arg) {
     int id = ((struct thread_args*)arg)->internal_id;
     requestQueue* queue = ((struct thread_args*)arg)->queue;
+    thread_stats stats = { .internal_id=id, .dynamic_count=0, .handled_count=0, .static_count=0 };
+
+    req_info* req_ptr = NULL;
 
     while(1) {
-        // TODO: pick up a request from the queue and handle it as follows:
         // get request from queue
         // handle request + statistics
         // close request
+
+        RQTakeRequest(queue, req_ptr);
+        requestHandle(req_ptr->connfd); // maybe give statistics as an arg, also maybe check if null
+        Close(req_ptr->connfd);
+        RQNotifyDone(queue);
     }
 }
 
@@ -82,6 +89,7 @@ int main(int argc, char *argv[])
     RQPolicy policy;
     int listenfd, connfd, clientlen;
     struct sockaddr_in clientaddr;
+    struct timeval arrival_time, dispatch_interval = { .tv_sec=-1, .tv_usec=-1 };
 
     getargs(&port, &threads, &max_queue_size, &policy, argc, argv);
     requestQueue* queue = RQInit(max_queue_size, policy);
@@ -98,14 +106,9 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
 
-        // TODO: move request handling to worker_thread(...) routine
-        // HW3: In general, don't handle the request in the main thread.
-        // Save the relevant info in a buffer and have one of the worker threads
-        // do the work.
-        //
-        requestHandle(connfd);
-
-        Close(connfd);
+        gettimeofday(&arrival_time, NULL);
+        req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval };
+        RQInsertRequest(queue, req);
     }
 
 }

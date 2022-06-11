@@ -111,11 +111,11 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
         request_count++;
-        debug_print("Server:\tACCEPTED request %d on fd %d from %d on port %d\n", request_count, connfd, clientaddr.sin_addr.s_addr, clientaddr.sin_port); //TODO : remove
+        debug_print("Server:\t\tACCEPTED request %d on fd %d from %d on port %d\n", request_count, connfd, clientaddr.sin_addr.s_addr, clientaddr.sin_port); //TODO : remove
         gettimeofday(&arrival_time, NULL);
         req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval, .req_id=request_count };
         RQInsertRequest(queue, req);
-        debug_print("Server:\tINSERTED request %d to queue\n", request_count); //TODO : remove
+        debug_print("Server:\t\tINSERTED request %d to queue\n", request_count); //TODO : remove
     }
 }
 

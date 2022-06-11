@@ -10,6 +10,7 @@ typedef struct req_info_t {
     int connfd;
     struct timeval arrival_time;
     struct timeval dispatch_interval; // (now - arrival_time) when this request goes out of the queue
+    int req_id;
 } req_info;
 
 typedef struct requestQueue_t requestQueue;

@@ -4,6 +4,7 @@
 
 #include "segel.h"
 #include "request.h"
+#include "common.h"
 
 void printStatistics(int fd, req_info req, thread_stats stats)
 {
@@ -216,7 +217,7 @@ void requestHandle(req_info req, thread_stats* stats)
    rio_t rio;
    int fd = req.connfd;
 
-   printf("handling request on fd %d\n", fd);
+   debug_print("Thread %d:\tHANDLING request %d on fd %d\n", stats->internal_id, req.req_id, fd);
    Rio_readinitb(&rio, fd);
    Rio_readlineb(&rio, buf, MAXLINE);
    sscanf(buf, "%s %s %s", method, uri, version);

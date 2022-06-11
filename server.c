@@ -3,6 +3,8 @@
 #include "requestQueue.h"
 #include "threadStats.h"
 
+#include "common.h"
+
 // 
 // server.c: A very, very simple web server
 //
@@ -66,7 +68,7 @@ void* worker_thread(void* arg) {
     req_info request;
     struct timeval dispatch_time;
 
-    printf("thread number %d starting to work\n", id);
+    debug_print("Thread number %d starting to work\n", id);
     while(1) {
         // get request from queue
         // handle request + statistics
@@ -77,12 +79,12 @@ void* worker_thread(void* arg) {
         gettimeofday(&dispatch_time, NULL);
         timersub(&dispatch_time, &(request.arrival_time), &(request.dispatch_interval));
 
-        printf("thread %d got request on fd %d\n", id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tFETCHED request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
         requestHandle(request, &stats);
-        printf("thread %d FINISHED request on fd %d\n", id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tFINISHED request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
         Close(request.connfd);
         RQNotifyDone(queue);
-        printf("thread %d NOTIFIED request on fd %d\n", id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tNOTIFIED about finishing request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
     }
 }
 
@@ -103,16 +105,17 @@ int main(int argc, char *argv[])
         args[i].internal_id = i;
         Pthread_create(&(args[i].thread_id), NULL, worker_thread, (void*)(args+i));
     }
-
+    int request_count = 0;
     listenfd = Open_listenfd(port);
     while (1) {
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
-
-        printf("server got request on fd %d\n", connfd); //TODO : remove
+        request_count++;
+        debug_print("Server:\tACCEPTED request %d on fd %d from %d on port %d\n", request_count, connfd, clientaddr.sin_addr.s_addr, clientaddr.sin_port); //TODO : remove
         gettimeofday(&arrival_time, NULL);
-        req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval };
+        req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval, .req_id=request_count };
         RQInsertRequest(queue, req);
+        debug_print("Server:\tINSERTED request %d to queue\n", request_count); //TODO : remove
     }
 }
 

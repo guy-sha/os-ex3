@@ -41,6 +41,7 @@ Node NodeCreate(req_info req) {
     new_node->req.connfd = req.connfd;
     new_node->req.arrival_time = req.arrival_time;
     new_node->req.dispatch_interval = req.dispatch_interval;
+    new_node->req.req_id = req.req_id;
 
     new_node->prev = NULL;
     new_node->next = NULL;

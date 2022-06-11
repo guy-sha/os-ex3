@@ -127,10 +127,10 @@ void ListRemoveNode(list* lst, Node node_to_remove, bool close_connection) {
 
 // Block until there's room in the queue for the new request node
 RQStatus doBlock(requestQueue* queue, Node* node_ptr) {
-    int total_in_queue = queue->wait_queue.size + queue->currently_handled_count;
-    while (total_in_queue >= queue->max_queue_size)
-        pthread_cond_wait(&(queue->can_add_req), &(queue->lock)); // release lock and sleep until new nodes can be added, then wake up and acquire lock
-
+    while (queue->wait_queue.size + queue->currently_handled_count >= queue->max_queue_size)
+        pthread_cond_wait(&(queue->can_add_req), &(queue->lock)); 
+        // release lock and sleep until new nodes can be added, then wake up and acquire lock
+    
     return RQ_SUCCESS;
 }
 

@@ -61,7 +61,7 @@ struct thread_args {
 void* worker_thread(void* arg) {
     int id = ((struct thread_args*)arg)->internal_id;
     requestQueue* queue = ((struct thread_args*)arg)->queue;
-    thread_stats stats = { .internal_id=id, .dynamic_count=0, .handled_count=0, .static_count=0 };
+    thread_stats stats = { .internal_id=id, .handled_count=0, .dynamic_count=0, .static_count=0 };
 
     req_info request;
     struct timeval dispatch_time;
@@ -77,10 +77,12 @@ void* worker_thread(void* arg) {
         gettimeofday(&dispatch_time, NULL);
         timersub(&dispatch_time, &(request.arrival_time), &(request.dispatch_interval));
 
-        printf("thread %d got request on fd %d\n", id, request.connfd);
-        requestHandle(request.connfd); // maybe give statistics as an arg, also maybe check if null
+        printf("thread %d got request on fd %d\n", id, request.connfd); //TODO : to remove
+        requestHandle(request, &stats);
+        printf("thread %d FINISHED request on fd %d\n", id, request.connfd); //TODO : to remove
         Close(request.connfd);
         RQNotifyDone(queue);
+        printf("thread %d NOTIFIED request on fd %d\n", id, request.connfd); //TODO : to remove
     }
 }
 
@@ -107,7 +109,7 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
 
-        printf("server got request on fd %d\n", connfd);
+        printf("server got request on fd %d\n", connfd); //TODO : remove
         gettimeofday(&arrival_time, NULL);
         req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval };
         RQInsertRequest(queue, req);

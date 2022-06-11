@@ -5,6 +5,35 @@
 #include "segel.h"
 #include "request.h"
 
+void printStatistics(int fd, req_info req, thread_stats stats)
+{
+   char buf[MAXLINE];
+
+   sprintf(buf, "Stat-Req-Arrival:: %lu.%06lu\r\n", req.arrival_time.tv_sec, req.arrival_time.tv_usec);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-Req-Dispatch:: %lu.%06lu\r\n", req.dispatch_interval.tv_sec, req.dispatch_interval.tv_usec);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-Thread-Id:: %d\r\n", stats.internal_id);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-Thread-Count:: %d\r\n", stats.handled_count);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-Thread-Static:: %d\r\n", stats.static_count);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   sprintf(buf, "Stat-Thread-Dynamic:: %d\r\n", stats.dynamic_count);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+}
+
 // requestError(      fd,    filename,        "404",    "Not found", "OS-HW3 Server could not find this file");
 void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg) 
 {

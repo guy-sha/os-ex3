@@ -1,13 +1,7 @@
 #include "segel.h"
 #include "request.h"
 #include "requestQueue.h"
-
-typedef struct thread_stats_t {
-    unsigned int internal_id;
-    unsigned int handled_count;
-    unsigned int static_count;
-    unsigned int dynamic_count;
-} thread_stats;
+#include "threadStats.h"
 
 // 
 // server.c: A very, very simple web server

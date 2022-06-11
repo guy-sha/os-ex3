@@ -151,8 +151,6 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, req_info req, th
    printf("%s", buf);
 
    printStatistics(fd, req, stats);
-   sprintf(buf, "\r\n");
-   Rio_writen(fd, buf, strlen(buf));
 
    if (Fork() == 0) {
       /* Child process */

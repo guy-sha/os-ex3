@@ -35,7 +35,7 @@ void printStatistics(int fd, req_info req, thread_stats stats)
 }
 
 // requestError(      fd,    filename,        "404",    "Not found", "OS-HW3 Server could not find this file");
-void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg) 
+void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longmsg, req_info req, thread_stats stats) 
 {
    char buf[MAXLINE], body[MAXBUF];
 
@@ -55,9 +55,13 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
-   sprintf(buf, "Content-Length: %lu\r\n\r\n", strlen(body));
+   sprintf(buf, "Content-Length: %lu\r\n", strlen(body));
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
+
+   printStatistics(fd, req, stats);
+   sprintf(buf, "\r\n", strlen(buf));
+   Rio_writen(fd, buf, strlen(buf));
 
    // Write out the content
    Rio_writen(fd, body, strlen(body));
@@ -130,15 +134,22 @@ void requestGetFiletype(char *filename, char *filetype)
       strcpy(filetype, "text/plain");
 }
 
-void requestServeDynamic(int fd, char *filename, char *cgiargs)
+void requestServeDynamic(int fd, char *filename, char *cgiargs, req_info req, thread_stats stats)
 {
    char buf[MAXLINE], *emptylist[] = {NULL};
 
    // The server does only a little bit of the header.  
    // The CGI script has to finish writing out the header.
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
-   sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
 
+   sprintf(buf, "Server: OS-HW3 Web Server\r\n");
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+
+   printStatistics(fd, req, stats);
+   sprintf(buf, "\r\n");
    Rio_writen(fd, buf, strlen(buf));
 
    if (Fork() == 0) {
@@ -152,7 +163,7 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs)
 }
 
 
-void requestServeStatic(int fd, char *filename, int filesize) 
+void requestServeStatic(int fd, char *filename, int filesize, req_info req, thread_stats stats) 
 {
    int srcfd;
    char *srcp, filetype[MAXLINE], buf[MAXBUF];
@@ -168,10 +179,24 @@ void requestServeStatic(int fd, char *filename, int filesize)
 
    // put together response
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
-   sprintf(buf, "%sServer: OS-HW3 Web Server\r\n", buf);
-   sprintf(buf, "%sContent-Length: %d\r\n", buf, filesize);
-   sprintf(buf, "%sContent-Type: %s\r\n\r\n", buf, filetype);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
 
+   sprintf(buf, "Server: OS-HW3 Web Server\r\n");
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+   
+   sprintf(buf, "Content-Length: %d\r\n", filesize);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+   
+   sprintf(buf, "Content-Type: %s\r\n", filetype);
+   Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
+   
+   printStatistics(fd, req, stats);
+
+   sprintf(buf, "\r\n", strlen(buf));
    Rio_writen(fd, buf, strlen(buf));
 
    //  Writes out to the client socket the memory-mapped file 

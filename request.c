@@ -181,7 +181,7 @@ void requestServeStatic(int fd, char *filename, int filesize)
 }
 
 // handle a request
-void requestHandle(int fd)
+void requestHandle(req_info req, thread_stats* stats)
 {
 
    int is_static;
@@ -189,6 +189,7 @@ void requestHandle(int fd)
    char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE];
    char filename[MAXLINE], cgiargs[MAXLINE];
    rio_t rio;
+   int fd = req.connfd;
 
    printf("handling request on fd %d\n", fd);
    Rio_readinitb(&rio, fd);
@@ -197,30 +198,34 @@ void requestHandle(int fd)
 
    printf("%s %s %s\n", method, uri, version);
 
-   if (strcasecmp(method, "GET")) {
-      requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method");
+   stats->handled_count++; //increase total amount of requests, doesnt matter if valid or not
+
+   if (strcasecmp(method, "GET")) { /*if not GET*/
+      requestError(fd, method, "501", "Not Implemented", "OS-HW3 Server does not implement this method", req ,*stats);
       return;
    }
    requestReadhdrs(&rio);
 
    is_static = requestParseURI(uri, filename, cgiargs);
    if (stat(filename, &sbuf) < 0) {
-      requestError(fd, filename, "404", "Not found", "OS-HW3 Server could not find this file");
+      requestError(fd, filename, "404", "Not found", "OS-HW3 Server could not find this file", req ,*stats);
       return;
    }
 
    if (is_static) {
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IRUSR & sbuf.st_mode)) {
-         requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not read this file");
+         requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not read this file", req ,*stats);
          return;
       }
-      requestServeStatic(fd, filename, sbuf.st_size);
+      stats->static_count++;
+      requestServeStatic(fd, filename, sbuf.st_size, req ,*stats); //print stats inside
    } else {
       if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) {
-         requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not run this CGI program");
+         requestError(fd, filename, "403", "Forbidden", "OS-HW3 Server could not run this CGI program", req ,*stats);
          return;
       }
-      requestServeDynamic(fd, filename, cgiargs);
+      stats->dynamic_count++;
+      requestServeDynamic(fd, filename, cgiargs, req ,*stats);//print stats inside
    }
 }
 

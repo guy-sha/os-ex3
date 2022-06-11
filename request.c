@@ -63,6 +63,7 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    printStatistics(fd, req, stats);
    sprintf(buf, "\r\n", strlen(buf));
    Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
 
    // Write out the content
    Rio_writen(fd, body, strlen(body));
@@ -199,6 +200,7 @@ void requestServeStatic(int fd, char *filename, int filesize, req_info req, thre
 
    sprintf(buf, "\r\n", strlen(buf));
    Rio_writen(fd, buf, strlen(buf));
+   printf("%s", buf);
 
    //  Writes out to the client socket the memory-mapped file 
    Rio_writen(fd, srcp, filesize);

@@ -181,9 +181,10 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     Node curr = queue->wait_queue.head;
     for (int idx=0; idx<waiting_count && curr != NULL; idx++) {
         Node next = curr->next;
-        if (queue_entries[idx] == true)
+        if (queue_entries[idx] == true) {
             debug_print("Server:\t\tDropping request number %d\n", curr->req.req_id);
             ListRemoveNode(&(queue->wait_queue), curr, true);
+        }
         curr = next;
     }
 

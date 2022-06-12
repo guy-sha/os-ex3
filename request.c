@@ -152,14 +152,16 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, req_info req, th
 
    printStatistics(fd, req, stats);
 
-   if (Fork() == 0) {
+   pid_t fork_pid = Fork();
+   if (fork_pid == 0) {
       /* Child process */
       Setenv("QUERY_STRING", cgiargs, 1);
       /* When the CGI process writes to stdout, it will instead go to the socket */
       Dup2(fd, STDOUT_FILENO);
       Execve(filename, emptylist, environ);
    }
-   Wait(NULL);
+    WaitPid(fork_pid, NULL, 0);
+//   Wait(NULL);
 }
 
 

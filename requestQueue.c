@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include "requestQueue.h"
+#include "common.h"
 
 struct node_t {
     req_info req;
@@ -137,6 +138,8 @@ RQStatus doBlock(requestQueue* queue, Node* node_ptr) {
 
 // Drop the new request - close the connection and free the node
 RQStatus doDropTail(requestQueue* queue, Node* node_ptr) {
+    debug_print("Server:\t\tStarting doDropTail\n");
+    debug_print("Server:\t\tDropping current request (id %d)\n", (*node_ptr)->req.req_id);
     dropConnection(node_ptr, true);
     return RQ_SUCCESS;
 }
@@ -146,7 +149,9 @@ int getRandomInRange(int lower, int upper) {
 }
 
 RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
+    debug_print("Server:\t\tStarting doDropRandom\n");
     if (ListEmpty(&(queue->wait_queue))) {
+        debug_print("Server:\t\tDropping current request (id %d)\n", (*node_ptr)->req.req_id);
         dropConnection(node_ptr, true);
         return RQ_SUCCESS;
     }
@@ -155,6 +160,7 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     int drop_count = ceil((double)(waiting_count + queue->currently_handled_count) * 0.3);
 
     if (drop_count >= waiting_count) {
+        debug_print("Server:\t\tNot enough requests queued, dropping all requests that aren't handled right now\n");
         ListCleanup(&(queue->wait_queue));
         return RQ_SUCCESS;
     }
@@ -175,6 +181,7 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     for (int idx=0; idx<waiting_count && curr != NULL; idx++) {
         Node next = curr->next;
         if (queue_entries[idx] == true)
+            debug_print("Server:\t\tDropping request number %d\n", curr->req.req_id);
             ListRemoveNode(&(queue->wait_queue), curr, true);
         curr = next;
     }
@@ -185,11 +192,14 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
 
 // Drop the oldest request in the queue by closing its connection and freeing the head node
 RQStatus doDropHead(requestQueue* queue, Node* node_ptr) {
+    debug_print("Server:\t\tStarting doDropHead\n");
     if (ListEmpty(&(queue->wait_queue))) {
+        debug_print("Server:\t\tDropping current request (id %d)\n", (*node_ptr)->req.req_id);
         dropConnection(node_ptr, true);
         return RQ_SUCCESS;
     }
 
+    debug_print("Server:\t\tDropping oldest request in queue (head) number %d\n", queue->wait_queue.head->req.req_id);
     ListRemoveNode(&(queue->wait_queue), queue->wait_queue.head, true);
     return RQ_SUCCESS;
 }

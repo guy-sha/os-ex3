@@ -281,9 +281,9 @@ RQStatus RQTakeRequest(requestQueue* queue, req_info* request_ptr) {
     while (ListEmpty(&(queue->wait_queue)) == true)
         pthread_cond_wait(&(queue->can_take_req), &(queue->lock));
 
-    Node tail = queue->wait_queue.tail;
-    *request_ptr = tail->req; // req_info does not contain any ptrs as data members, and doesn't need to deep-copy
-    ListRemoveNode(&(queue->wait_queue), tail, false);
+    Node head = queue->wait_queue.head;
+    *request_ptr = head->req; // req_info does not contain any ptrs as data members, and doesn't need to deep-copy
+    ListRemoveNode(&(queue->wait_queue), head, false);
     queue->currently_handled_count++;
 
     pthread_mutex_unlock(&(queue->lock));

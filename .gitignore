@@ -4,6 +4,7 @@ server
 *.cgi
 public/
 .vscode
+**/venv
 
 # Prerequisites
 *.d

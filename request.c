@@ -61,7 +61,7 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    printf("%s", buf);
 
    printStatistics(fd, req, stats);
-   sprintf(buf, "\r\n", strlen(buf));
+   sprintf(buf, "\r\n");
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 
@@ -198,7 +198,7 @@ void requestServeStatic(int fd, char *filename, int filesize, req_info req, thre
    
    printStatistics(fd, req, stats);
 
-   sprintf(buf, "\r\n", strlen(buf));
+   sprintf(buf, "\r\n");
    Rio_writen(fd, buf, strlen(buf));
    printf("%s", buf);
 

@@ -36,7 +36,7 @@ struct requestQueue_t {
 /* Node methods */
 
 Node NodeCreate(req_info req) {
-    Node new_node = (Node)malloc(sizeof(*new_node));
+    Node new_node = (Node)Malloc(sizeof(*new_node));
     if (new_node == NULL) {
         return NULL;
     }
@@ -172,7 +172,7 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     }
 
     // not all requests are dropped, need to choose randomly
-    bool* queue_entries = (bool*)malloc(sizeof(*queue_entries) * waiting_count);
+    bool* queue_entries = (bool*)Malloc(sizeof(*queue_entries) * waiting_count);
     for (int i=0; i<waiting_count; i++)
         queue_entries[i] = false;
     while (drop_count > 0) {
@@ -216,7 +216,7 @@ RQStatus doDropHead(requestQueue* queue, Node* node_ptr) {
 
 /* requestQueue methods */
 requestQueue* RQInit(int max_queue_size, RQPolicy policy) {
-    requestQueue* queue = (requestQueue*)malloc(sizeof(*queue));
+    requestQueue* queue = (requestQueue*)Malloc(sizeof(*queue));
     if (queue == NULL) {
         return NULL;
     }

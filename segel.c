@@ -202,6 +202,13 @@ void Munmap(void *start, size_t length)
         unix_error("munmap error");
 }
 
+void* Malloc(size_t size) {
+    void* ptr = malloc(size);
+    if (ptr == NULL)
+        unix_error("malloc error");
+    return ptr;
+}
+
 /**************************** 
  * Sockets interface wrappers
  ****************************/

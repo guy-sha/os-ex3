@@ -93,6 +93,7 @@ void Fstat(int fd, struct stat *buf) ;
 /* Memory mapping wrappers */
 void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 void Munmap(void *start, size_t length);
+void* Malloc(size_t size);
 
 /* Sockets interface wrappers */
 int Socket(int domain, int type, int protocol);

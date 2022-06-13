@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
     getargs(&port, &threads, &max_queue_size, &policy, argc, argv);
     requestQueue* queue = RQInit(max_queue_size, policy);
 
-    struct thread_args* args = malloc(sizeof(*args)*threads);
+    struct thread_args* args = Malloc(sizeof(*args)*threads);
     for( int i=0; i<threads; i++ ) {
         args[i].queue = queue;
         args[i].internal_id = i;

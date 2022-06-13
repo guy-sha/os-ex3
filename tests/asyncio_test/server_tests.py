@@ -42,7 +42,7 @@ class RequestsTest(unittest.TestCase):
         self.thread_count = thread_count
         self.policy = policy
         if policy == 'random':
-            self.per_drop_size = math.ceil(0.3 * self.queue_size)
+            self.per_drop_size = math.ceil(0.3 * (self.queue_size - self.thread_count))
         elif policy in ['dt', 'dh']:
             self.per_drop_size = 1
         elif policy == 'block':

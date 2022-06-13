@@ -3,6 +3,8 @@
 #include "requestQueue.h"
 #include "common.h"
 
+#define RANDOM_DROP_PERCENTAGE (0.3)
+
 struct node_t {
     req_info req;
     struct node_t* prev;
@@ -157,7 +159,7 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     }
 
     int waiting_count = queue->wait_queue.size;
-    int drop_count = ceil((double)(waiting_count) * 0.3);
+    int drop_count = ceil((double)(waiting_count) * RANDOM_DROP_PERCENTAGE);
 
     // We first understood that the drop count is calculated as ceil(max_queue_size * 0.3).
     // In that case, we might have to drop more than requests than we have (because we drop only waiting requests).

@@ -5,6 +5,7 @@ server
 public/
 .vscode
 **/venv
+submitters.txt
 
 # Prerequisites
 *.d

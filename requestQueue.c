@@ -157,9 +157,12 @@ RQStatus doDropRandom(requestQueue* queue, Node* node_ptr) {
     }
 
     int waiting_count = queue->wait_queue.size;
-    int drop_count = ceil((double)(waiting_count + queue->currently_handled_count) * 0.3);
-    assert((waiting_count + queue->currently_handled_count) == queue->max_queue_size);
+    int drop_count = ceil((double)(waiting_count) * 0.3);
 
+    // We first understood that the drop count is calculated as ceil(max_queue_size * 0.3).
+    // In that case, we might have to drop more than requests than we have (because we drop only waiting requests).
+    // We now understand that the drop count is ceil(waiting_count * 0.3) so the only way this if statement is entered
+    // is when waiting_count = 1
     if (drop_count >= waiting_count) {
         debug_print("Server:\t\tNot enough requests queued, dropping all requests that aren't handled right now\n");
         ListCleanup(&(queue->wait_queue));

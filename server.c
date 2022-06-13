@@ -79,12 +79,12 @@ void* worker_thread(void* arg) {
         gettimeofday(&dispatch_time, NULL);
         timersub(&dispatch_time, &(request.arrival_time), &(request.dispatch_interval));
 
-        debug_print("Thread %d:\tFETCHED request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tFETCHED request %d on fd %d\n", id, request.req_id, request.connfd);
         requestHandle(request, &stats);
-        debug_print("Thread %d:\tFINISHED request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tFINISHED request %d on fd %d\n", id, request.req_id, request.connfd);
         Close(request.connfd);
         RQNotifyDone(queue);
-        debug_print("Thread %d:\tNOTIFIED about finishing request %d on fd %d\n", id, request.req_id, request.connfd); //TODO : to remove
+        debug_print("Thread %d:\tNOTIFIED about finishing request %d on fd %d\n", id, request.req_id, request.connfd);
     }
 }
 
@@ -111,11 +111,11 @@ int main(int argc, char *argv[])
         clientlen = sizeof(clientaddr);
         connfd = Accept(listenfd, (SA *)&clientaddr, (socklen_t *) &clientlen);
         request_count++;
-        debug_print("Server:\t\tACCEPTED request %d on fd %d from %d on port %d\n", request_count, connfd, clientaddr.sin_addr.s_addr, clientaddr.sin_port); //TODO : remove
+        debug_print("Server:\t\tACCEPTED request %d on fd %d from %d on port %d\n", request_count, connfd, clientaddr.sin_addr.s_addr, clientaddr.sin_port);
         gettimeofday(&arrival_time, NULL);
         req_info req = { .arrival_time=arrival_time, .connfd=connfd, .dispatch_interval=dispatch_interval, .req_id=request_count };
         RQInsertRequest(queue, req);
-        debug_print("Server:\t\tINSERTED request %d to queue\n", request_count); //TODO : remove
+        debug_print("Server:\t\tINSERTED request %d to queue\n", request_count);
     }
 }
 

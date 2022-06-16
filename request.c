@@ -12,27 +12,27 @@ void printStatistics(int fd, req_info req, thread_stats stats)
 
    sprintf(buf, "Stat-Req-Arrival:: %lu.%06lu\r\n", req.arrival_time.tv_sec, req.arrival_time.tv_usec);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Stat-Req-Dispatch:: %lu.%06lu\r\n", req.dispatch_interval.tv_sec, req.dispatch_interval.tv_usec);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Stat-Thread-Id:: %d\r\n", stats.internal_id);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Stat-Thread-Count:: %d\r\n", stats.handled_count);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Stat-Thread-Static:: %d\r\n", stats.static_count);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Stat-Thread-Dynamic:: %d\r\n", stats.dynamic_count);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 }
 
 // requestError(      fd,    filename,        "404",    "Not found", "OS-HW3 Server could not find this file");
@@ -50,24 +50,24 @@ void requestError(int fd, char *cause, char *errnum, char *shortmsg, char *longm
    // Write out the header information for this response
    sprintf(buf, "HTTP/1.0 %s %s\r\n", errnum, shortmsg);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Content-Type: text/html\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Content-Length: %lu\r\n", strlen(body));
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    printStatistics(fd, req, stats);
    sprintf(buf, "\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    // Write out the content
    Rio_writen(fd, body, strlen(body));
-   printf("%s", body);
+   debug_print("%s", body);
 
 }
 
@@ -144,11 +144,11 @@ void requestServeDynamic(int fd, char *filename, char *cgiargs, req_info req, th
    // The CGI script has to finish writing out the header.
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Server: OS-HW3 Web Server\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    printStatistics(fd, req, stats);
 
@@ -182,25 +182,25 @@ void requestServeStatic(int fd, char *filename, int filesize, req_info req, thre
    // put together response
    sprintf(buf, "HTTP/1.0 200 OK\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    sprintf(buf, "Server: OS-HW3 Web Server\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
    
    sprintf(buf, "Content-Length: %d\r\n", filesize);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
    
    sprintf(buf, "Content-Type: %s\r\n", filetype);
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
    
    printStatistics(fd, req, stats);
 
    sprintf(buf, "\r\n");
    Rio_writen(fd, buf, strlen(buf));
-   printf("%s", buf);
+   debug_print("%s", buf);
 
    //  Writes out to the client socket the memory-mapped file 
    Rio_writen(fd, srcp, filesize);
@@ -224,7 +224,7 @@ void requestHandle(req_info req, thread_stats* stats)
    Rio_readlineb(&rio, buf, MAXLINE);
    sscanf(buf, "%s %s %s", method, uri, version);
 
-   printf("%s %s %s\n", method, uri, version);
+   debug_print("%s %s %s\n", method, uri, version);
 
    stats->handled_count++; //increase total amount of requests, doesnt matter if valid or not
 

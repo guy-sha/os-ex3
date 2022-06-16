@@ -6,6 +6,7 @@ public/
 .vscode
 **/venv
 submitters.txt
+**/__pycache__
 
 # Prerequisites
 *.d
